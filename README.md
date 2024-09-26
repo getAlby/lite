@@ -5,6 +5,7 @@ A minimal LNURL + Zapper service powered powered by [NWC](https://nwc.dev)
 ## Development
 
 - [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation/)
+- Copy `.env.example` to `.env`
 - Setup DB: `deno task db:migrate`
 - Run in dev mode: `deno task dev`
 
