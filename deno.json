@@ -1,0 +1,20 @@
+{
+  "imports": {
+    "hono": "jsr:@hono/hono@^4.5.5",
+    "drizzle-orm": "npm:drizzle-orm@0.33.0",
+    "drizzle-kit": "npm:drizzle-kit@0.24.2",
+    "postgres": "npm:postgres@3.4.4"
+  },
+  "tasks": {
+    "cache": "deno cache ./src/main.ts ./src/db/schema.ts npm:@libsql/client",
+    "cache:reload": "deno cache --reload ./src/main.ts ./src/db/schema.ts",
+    "db:generate": "deno run -A --node-modules-dir npm:drizzle-kit generate",
+    "db:migrate": "deno run -A --node-modules-dir npm:drizzle-kit migrate",
+    "dev": "deno run --env --allow-net --allow-env --unstable-ffi --allow-ffi --allow-read --allow-write --watch src/main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read=favicon.ico src/main.ts"
+  },
+  "compilerOptions": {
+    "jsx": "precompile",
+    "jsxImportSource": "hono/jsx"
+  }
+}
