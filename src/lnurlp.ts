@@ -34,7 +34,7 @@ lnurlApp.get("/:username/callback", async (c) => {
   // TODO: store data (e.g. for zaps)
 
   if (!amount) {
-    throw new Error("No amount provided");
+    return c.text('No amount provided', 404);
   }
 
   const connectionSecret = await findWalletConnection(username);
