@@ -12,7 +12,11 @@ A minimal LNURL + Zapper service powered powered by [NWC](https://nwc.dev)
 ### Creating a new migration
 
 - Create the migration files: `deno task db:generate`
-- Run the migration: `deno task db:migrate`
+- The migration will automatically happen when the app starts.
+
+### Running Tests
+
+`deno task test`
 
 ## Deployment
 

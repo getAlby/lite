@@ -9,8 +9,10 @@
     "cache": "deno cache ./src/main.ts ./src/db/schema.ts npm:@libsql/client",
     "cache:reload": "deno cache --reload ./src/main.ts ./src/db/schema.ts",
     "db:generate": "deno run -A --node-modules-dir npm:drizzle-kit generate",
-    "dev": "deno run --env --allow-net --allow-env --unstable-ffi --allow-ffi --allow-read --allow-write --watch src/main.ts",
-    "start": "deno run --allow-net --allow-env --allow-read=favicon.ico src/main.ts"
+    "db:generate:key": "deno run ./src/db/generateKey.ts",
+    "dev": "deno run --env --allow-net --allow-env --allow-read --allow-write --watch src/main.ts",
+    "start": "deno run --env --allow-net --allow-env --allow-read --allow-write src/main.ts",
+    "test": "deno test --env --allow-env"
   },
   "compilerOptions": {
     "jsx": "precompile",

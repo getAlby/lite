@@ -38,7 +38,7 @@ export function createLnurlApp(db: DB) {
       return c.text("No amount provided", 404);
     }
 
-    const connectionSecret = await db.findWalletConnection(username);
+    const connectionSecret = await db.findWalletConnectionSecret(username);
 
     const nwcClient = new nwc.NWCClient({
       nostrWalletConnectUrl: connectionSecret,

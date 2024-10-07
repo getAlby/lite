@@ -5,6 +5,7 @@ import postgres from "postgres";
 
 import { eq } from "drizzle-orm";
 import { DATABASE_URL } from "../constants.ts";
+import { decrypt, encrypt } from "./aesgcm.ts";
 import * as schema from "./schema.ts";
 import { users } from "./schema.ts";
 
@@ -37,8 +38,10 @@ export class DB {
     // TODO: use haikunator
     username = username || Math.floor(Math.random() * 100000000000).toString();
 
+    const encryptedConnectionSecret = await encrypt(connectionSecret);
+
     await this._db.insert(users).values({
-      connectionSecret,
+      encryptedConnectionSecret,
       username,
     });
 
@@ -49,13 +52,14 @@ export class DB {
     return this._db.query.users.findMany();
   }
 
-  async findWalletConnection(username: string) {
+  async findWalletConnectionSecret(username: string) {
     const result = await this._db.query.users.findFirst({
       where: eq(users.username, username),
     });
     if (!result) {
       throw new Error("user not found");
     }
-    return result?.connectionSecret;
+    const connectionSecret = await decrypt(result.encryptedConnectionSecret);
+    return connectionSecret;
   }
 }
