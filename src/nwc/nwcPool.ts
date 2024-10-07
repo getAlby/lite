@@ -1,18 +1,20 @@
 import { nwc } from "npm:@getalby/sdk";
-import { getAllUsers } from "../db/db.ts";
+import { DB } from "../db/db.ts";
 import { logger } from "../logger.ts";
 
 export class NWCPool {
-  readonly _nwcs: nwc.NWCClient[];
-  constructor() {
+  private readonly _db: DB;
+  private readonly _nwcs: nwc.NWCClient[];
+  constructor(db: DB) {
     this._nwcs = [];
+    this._db = db;
+  }
 
-    (async () => {
-      const users = await getAllUsers();
-      for (const user of users) {
-        this.addNWCClient(user.connectionSecret, user.username);
-      }
-    })();
+  async init() {
+    const users = await this._db.getAllUsers();
+    for (const user of users) {
+      this.addNWCClient(user.connectionSecret, user.username);
+    }
   }
 
   addNWCClient(connectionSecret: string, username: string) {
@@ -29,5 +31,3 @@ export class NWCPool {
     );
   }
 }
-
-export const nwcPool = new NWCPool();
