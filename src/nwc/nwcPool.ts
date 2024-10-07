@@ -4,9 +4,7 @@ import { logger } from "../logger.ts";
 
 export class NWCPool {
   private readonly _db: DB;
-  private readonly _nwcs: nwc.NWCClient[];
   constructor(db: DB) {
-    this._nwcs = [];
     this._db = db;
   }
 
