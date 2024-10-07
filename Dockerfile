@@ -3,8 +3,8 @@ EXPOSE 8080
 
 WORKDIR /app
 
-USER deno
-
 COPY . .
+
+USER deno
 
 CMD ["task", "start"]
