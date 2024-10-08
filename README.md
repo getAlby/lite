@@ -2,6 +2,26 @@
 
 A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
+## API
+
+### Create a new user
+
+`POST /users`
+
+```json
+{
+    "connectionSecret": "nostr+walletconnect://..."
+}
+```
+
+`returns`
+
+```
+{
+    "lightningAddress": "91290133601@albylite.com"
+}
+```
+
 ## Development
 
 - [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation/)
