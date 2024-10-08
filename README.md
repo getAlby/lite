@@ -20,6 +20,8 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ## Deployment
 
+_Environment variables must be setup, including a postgres database connection. Please see .env.example._
+
 ### Run with Deno
 
 `deno task start`
@@ -36,4 +38,6 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 Make sure to update the `app` name and `BASE_URL` in fly.toml, then run:
 
-- `fly deploy`
+- `fly launch`
+
+_When launching, make sure to include a postgres database when setting up the app, then update your app environment variables with `fly secrets set`._
