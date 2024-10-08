@@ -31,6 +31,7 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ### Creating a new migration
 
+- Edit the schema (`./src/db/schema.ts`)
 - Create the migration files: `deno task db:generate`
 - The migration will automatically happen when the app starts.
 
