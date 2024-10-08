@@ -20,6 +20,10 @@ A minimal LNURL + Zapper service powered powered by [NWC](https://nwc.dev)
 
 ## Deployment
 
+### Run with Deno
+
+`deno task start`
+
 ### Docker (from Alby's Container Registry)
 
 `docker run -p 8080:8080 --pull always ghcr.io/getalby/lite:latest`
@@ -31,10 +35,3 @@ docker run -p 8080:8080 $(docker build -q .)
 ### Deploy on Fly
 
 - `fly deploy`
-
-## TODOs
-
-- [ ] deploy on fly
-- [ ] zapper support
-- [ ] NIP-05 support
-- [ ] invite links
