@@ -1,0 +1,3 @@
+.env
+alby-lite.db*
+node_modules
