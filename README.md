@@ -1,6 +1,6 @@
 # Alby Lite
 
-A minimal LNURL + Zapper service powered powered by [NWC](https://nwc.dev)
+A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ## Development
 
@@ -30,8 +30,10 @@ A minimal LNURL + Zapper service powered powered by [NWC](https://nwc.dev)
 
 ### Docker (from source)
 
-docker run -p 8080:8080 $(docker build -q .)
+`docker run -p 8080:8080 $(docker build -q .)`
 
 ### Deploy on Fly
+
+Make sure to update the `app` name and `BASE_URL` in fly.toml, then run:
 
 - `fly deploy`
