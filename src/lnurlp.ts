@@ -1,14 +1,14 @@
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
 import { BASE_URL, DOMAIN } from "./constants.ts";
 import { DB } from "./db/db.ts";
 import "./nwc/nwcPool.ts";
 
-export function createLnurlApp(db: DB) {
+export function createLnurlWellKnownApp(db: DB) {
   const hono = new Hono();
 
-  hono.get("/:username", async (c) => {
+  hono.get("/:username", async (c: Context) => {
     try {
       const username = c.req.param("username");
 
@@ -22,7 +22,7 @@ export function createLnurlApp(db: DB) {
       return c.json({
         tag: "payRequest",
         commentAllowed: 255,
-        callback: `${BASE_URL}/.well-known/lnurlp/${username}/callback`,
+        callback: `${BASE_URL}/lnurlp/${username}/callback`,
         minSendable: 1000,
         maxSendable: 10000000000,
         metadata: `[["text/identifier","${username}@${DOMAIN}"],["text/plain","Sats for ${username}"]]`,
@@ -32,7 +32,13 @@ export function createLnurlApp(db: DB) {
     }
   });
 
-  hono.get("/:username/callback", async (c) => {
+  return hono;
+}
+
+export function createLnurlApp(db: DB) {
+  const hono = new Hono();
+
+  hono.get("/:username/callback", async (c: Context) => {
     try {
       const username = c.req.param("username");
       const amount = c.req.query("amount");
@@ -52,17 +58,45 @@ export function createLnurlApp(db: DB) {
       });
 
       const transaction = await nwcClient.makeInvoice({
-        amount: +amount,
+        amount: Math.floor(+amount / 1000) * 1000,
         description: comment,
       });
 
       return c.json({
-        pr: transaction.invoice,
+        verify: `${BASE_URL}/lnurlp/${username}/verify/${transaction.payment_hash}`,
         routes: [],
+        pr: transaction.invoice,
       });
     } catch (error) {
       return c.json({ status: "ERROR", reason: "" + error });
     }
   });
+
+  hono.get("/:username/verify/:payment_hash", async (c: Context) => {
+    try {
+      const username = c.req.param("username");
+      const paymentHash = c.req.param("payment_hash");
+      logger.debug("LNURLp verify", { username, paymentHash });
+
+      const connectionSecret = await db.findWalletConnectionSecret(username);
+
+      const nwcClient = new nwc.NWCClient({
+        nostrWalletConnectUrl: connectionSecret,
+      });
+
+      const transaction = await nwcClient.lookupInvoice({
+        payment_hash: paymentHash,
+      });
+
+      return c.json({
+        settled: !!transaction.settled_at,
+        preimage: transaction.preimage || null,
+        pr: transaction.invoice,
+      });
+    } catch (error) {
+      return c.json({ status: "ERROR", reason: "" + error });
+    }
+  });
+
   return hono;
 }

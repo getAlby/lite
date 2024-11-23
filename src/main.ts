@@ -1,10 +1,10 @@
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 import { serveStatic } from "hono/deno";
 import { secureHeaders } from "hono/secure-headers";
 //import { sentry } from "npm:@hono/sentry";
 import { PORT } from "./constants.ts";
 import { DB, runMigration } from "./db/db.ts";
-import { createLnurlApp } from "./lnurlp.ts";
+import { createLnurlApp, createLnurlWellKnownApp } from "./lnurlp.ts";
 import { LOG_LEVEL, logger, loggerMiddleware } from "./logger.ts";
 import { NWCPool } from "./nwc/nwcPool.ts";
 import { createUsersApp } from "./users.ts";
@@ -26,16 +26,17 @@ hono.use(secureHeaders());
   hono.use("*", sentry({ dsn: SENTRY_DSN }));
 }*/
 
-hono.route("/.well-known/lnurlp", createLnurlApp(db));
+hono.route("/.well-known/lnurlp", createLnurlWellKnownApp(db));
+hono.route("/lnurlp", createLnurlApp(db));
 hono.route("/users", createUsersApp(db, nwcPool));
 
-hono.get("/ping", (c) => {
+hono.get("/ping", (c: Context) => {
   return c.body("OK");
 });
 
 hono.use("/favicon.ico", serveStatic({ path: "./favicon.ico" }));
 
-hono.get("/robots.txt", (c) => {
+hono.get("/robots.txt", (c: Context) => {
   return c.body("User-agent: *\nDisallow: /", 200);
 });
 
