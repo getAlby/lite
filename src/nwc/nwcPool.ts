@@ -13,19 +13,22 @@ export class NWCPool {
     const users = await this._db.getAllUsers();
     for (const user of users) {
       const connectionSecret = await decrypt(user.encryptedConnectionSecret);
-      this.subscribeUser(connectionSecret, user.username);
+      this.subscribeUser(connectionSecret, user.id);
     }
   }
 
-  subscribeUser(connectionSecret: string, username: string) {
-    logger.debug("subscribing to user", { username });
+  subscribeUser(connectionSecret: string, userId: number) {
+    logger.debug("subscribing to user", { userId });
     const nwcClient = new nwc.NWCClient({
       nostrWalletConnectUrl: connectionSecret,
     });
 
     nwcClient.subscribeNotifications(
       (notification) => {
-        logger.debug("received notification", { username, notification });
+        logger.debug("received notification", { userId, notification });
+        if (notification.notification_type === "payment_received") {
+          this._db.updateInvoice(userId, notification.notification)
+        }
       },
       ["payment_received"]
     );

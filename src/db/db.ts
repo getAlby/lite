@@ -3,11 +3,11 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { nwc } from "npm:@getalby/sdk";
 import postgres from "postgres";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { DATABASE_URL } from "../constants.ts";
 import { decrypt, encrypt } from "./aesgcm.ts";
 import * as schema from "./schema.ts";
-import { users } from "./schema.ts";
+import { invoices, users } from "./schema.ts";
 
 export async function runMigration() {
   const migrationClient = postgres(DATABASE_URL, { max: 1 });
@@ -52,7 +52,7 @@ export class DB {
     return this._db.query.users.findMany();
   }
 
-  async findWalletConnectionSecret(username: string) {
+  async findUser(username: string) {
     const result = await this._db.query.users.findFirst({
       where: eq(users.username, username),
     });
@@ -60,6 +60,56 @@ export class DB {
       throw new Error("user not found");
     }
     const connectionSecret = await decrypt(result.encryptedConnectionSecret);
-    return connectionSecret;
+    return {
+      id: result.id,
+      connectionSecret
+    };
+  }
+
+  async createInvoice(
+    userId: number,
+    transaction: nwc.Nip47Transaction
+  ): Promise<{ identifier: string }> {
+    await this._db.insert(invoices).values({
+      userId,
+      amount: transaction.amount,
+      description: transaction.description,
+      descriptionHash: transaction.description_hash,
+      paymentRequest: transaction.invoice,
+      paymentHash: transaction.payment_hash,
+      metadata: transaction.metadata,
+    });
+
+    return { identifier: transaction.payment_hash };
+  }
+
+  async findInvoice(identifier: string) {
+    const result = await this._db.query.invoices.findFirst({
+      where: eq(invoices.paymentHash, identifier),
+    });
+    if (!result) {
+      throw new Error("invoice not found");
+    }
+    return result;
+  }
+
+  async updateInvoice(
+    userId: number,
+    transaction: nwc.Nip47Transaction
+  ): Promise<void> {
+    await this._db
+      .update(invoices)
+      .set({
+        preimage: transaction.preimage,
+        settledAt: new Date(transaction.settled_at * 1000),
+      })
+      .where(
+        and(
+          eq(invoices.userId, userId),
+          eq(invoices.paymentHash, transaction.payment_hash)
+        )
+      )
+
+    return;
   }
 }
