@@ -11,3 +11,7 @@ if (!databaseUrl) {
   Deno.exit(1);
 }
 export const DATABASE_URL = databaseUrl;
+
+export const NOSTR_NIP57_PRIVATE_KEY = Deno.env.get("NOSTR_NIP57_PRIVATE_KEY") || "";
+export const NOSTR_PUBLISHER_API_TOKEN = Deno.env.get("NOSTR_PUBLISHER_API_TOKEN") || "";
+export const NOSTR_PUBLISHER_API_URL = Deno.env.get("NOSTR_PUBLISHER_API_URL") || "";
