@@ -1,4 +1,5 @@
-import { validateEvent } from "@nostr/tools";
+import { Event } from "@nostr/tools";
+import { validateZapRequest } from "@nostr/tools/nip57";
 import { Context, Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
@@ -14,9 +15,7 @@ function getLnurlMetadata(username: string): string {
 }
 
 async function computeDescriptionHash(content: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const buffer = encoder.encode(content);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content));
   return Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
@@ -61,7 +60,7 @@ export function createLnurlApp(db: DB) {
       const amount = c.req.query("amount");
       const comment = c.req.query("comment") || "";
       const payerData = c.req.query("payerdata") ? JSON.parse(c.req.query("payerdata") || "") : null;
-      const nostr = c.req.query("nostr") ? JSON.parse(decodeURIComponent(c.req.query("nostr") || "")) : null;
+      const nostr = c.req.query("nostr") ? decodeURIComponent(c.req.query("nostr") || "") : null;
 
       logger.debug("LNURLp callback", { username, amount, comment, payerData, nostr });
 
@@ -69,10 +68,18 @@ export function createLnurlApp(db: DB) {
         throw new Error("No amount provided");
       }
 
-      const isZapRequestValid = validateEvent(nostr)
-      const description = isZapRequestValid ? nostr.content : comment;
+      let zapRequest: Event | undefined
+      if (nostr) {
+        const zapValidationError = validateZapRequest(nostr)
+        if (zapValidationError) {
+          throw new Error(zapValidationError);
+        }
+        zapRequest = JSON.parse(nostr)
+      }
 
-      const content = isZapRequestValid ? JSON.stringify(nostr) : getLnurlMetadata(username);
+      const description = zapRequest ? zapRequest.content : comment;
+
+      const content = zapRequest ? JSON.stringify(nostr) : getLnurlMetadata(username);
       const descriptionHash = await computeDescriptionHash(content);
 
       const user = await db.findUser(username);
@@ -88,7 +95,7 @@ export function createLnurlApp(db: DB) {
           comment: comment || undefined,
           // TODO: payer_data can be improved using nostr worker
           payer_data: payerData || undefined,
-          nostr: isZapRequestValid ? nostr : undefined,
+          nostr: zapRequest || undefined,
         },
         description_hash: descriptionHash,
       });
