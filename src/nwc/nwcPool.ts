@@ -66,7 +66,7 @@ export class NWCPool {
       paidAt: new Date(transaction.settled_at * 1000)
     })
     const relays = requestEvent.tags.filter(tag => tag[0] === 'relays')[0].slice(1);
-    if (relays.length) {
+    if (!relays.length) {
       logger.error("no relays specified in zap request", { user_id: userId, transaction });
       return;
     }
