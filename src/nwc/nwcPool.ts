@@ -93,6 +93,7 @@ export class NWCPool {
         relays,
         response_status: response.status,
       });
+      return;
     }
 
     logger.debug("published zap", {
