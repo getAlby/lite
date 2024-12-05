@@ -1,6 +1,6 @@
 import { Event } from "@nostr/tools";
 import { validateZapRequest } from "@nostr/tools/nip57";
-import { Context, Hono } from "hono";
+import { Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
 import { BASE_URL, DOMAIN } from "./constants.ts";
@@ -24,7 +24,7 @@ async function computeDescriptionHash(content: string): Promise<string> {
 export function createLnurlWellKnownApp(db: DB) {
   const hono = new Hono();
 
-  hono.get("/:username", async (c: Context) => {
+  hono.get("/:username", async (c) => {
     try {
       const username = c.req.param("username");
 
@@ -54,7 +54,7 @@ export function createLnurlWellKnownApp(db: DB) {
 export function createLnurlApp(db: DB) {
   const hono = new Hono();
 
-  hono.get("/:username/callback", async (c: Context) => {
+  hono.get("/:username/callback", async (c) => {
     try {
       const username = c.req.param("username");
       const amount = c.req.query("amount");
@@ -112,7 +112,7 @@ export function createLnurlApp(db: DB) {
     }
   });
 
-  hono.get("/:username/verify/:identifier", async (c: Context) => {
+  hono.get("/:username/verify/:identifier", async (c) => {
     try {
       const username = c.req.param("username");
       const identifier = c.req.param("identifier");
