@@ -79,7 +79,7 @@ export function createLnurlApp(db: DB) {
 
       const description = zapRequest ? zapRequest.content : comment;
 
-      const content = zapRequest ? JSON.stringify(nostr) : getLnurlMetadata(username);
+      const content = zapRequest ? (nostr || "") : getLnurlMetadata(username);
       const descriptionHash = await computeDescriptionHash(content);
 
       const user = await db.findUser(username);
@@ -100,10 +100,10 @@ export function createLnurlApp(db: DB) {
         description_hash: descriptionHash,
       });
 
-      const invoice = await db.createInvoice(user.id, transaction);
+      await db.createInvoice(user.id, transaction);
 
       return c.json({
-        verify: `${BASE_URL}/lnurlp/${username}/verify/${invoice.identifier}`,
+        verify: `${BASE_URL}/lnurlp/${username}/verify/${transaction.payment_hash}`,
         routes: [],
         pr: transaction.invoice,
       });
@@ -112,14 +112,14 @@ export function createLnurlApp(db: DB) {
     }
   });
 
-  hono.get("/:username/verify/:identifier", async (c) => {
+  hono.get("/:username/verify/:payment_hash", async (c) => {
     try {
       const username = c.req.param("username");
-      const identifier = c.req.param("identifier");
+      const paymentHash = c.req.param("payment_hash");
 
-      logger.debug("LNURLp verify", { username, identifier });
+      logger.debug("LNURLp verify", { username, paymentHash });
 
-      const invoice = await db.findInvoice(identifier);
+      const invoice = await db.findInvoice(paymentHash);
 
       return c.json({
         settled: !!invoice.settledAt,

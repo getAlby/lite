@@ -1,3 +1,5 @@
+import "jsr:@std/dotenv/load";
+
 export const PORT = parseInt(Deno.env.get("PORT") || "8080");
 export const BASE_URL = Deno.env.get("BASE_URL");
 if (!BASE_URL) {

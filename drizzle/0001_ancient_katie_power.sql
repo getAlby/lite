@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "invoices" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
-	"amount" integer NOT NULL,
+	"amount" bigint NOT NULL,
 	"description" text,
 	"description_hash" text,
 	"payment_request" text NOT NULL,
@@ -20,7 +20,4 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "user_id_idx" ON "invoices" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "payment_hash_idx" ON "invoices" USING btree ("payment_hash");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "user_payment_hash_idx" ON "invoices" USING btree ("user_id","payment_hash");--> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "username_idx" ON "users" USING btree ("username");
+CREATE INDEX IF NOT EXISTS "user_id_idx" ON "invoices" USING btree ("user_id");

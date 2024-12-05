@@ -1,5 +1,5 @@
 {
-  "id": "a90a8c91-5f2c-48da-9109-ae0a37820ceb",
+  "id": "87dd9fe6-7a48-463d-bfce-15767f26fee9",
   "prevId": "e292703e-d08b-4f8b-a9eb-3937fe872be7",
   "version": "7",
   "dialect": "postgresql",
@@ -22,7 +22,7 @@
         },
         "amount": {
           "name": "amount",
-          "type": "integer",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
@@ -82,42 +82,6 @@
           "columns": [
             {
               "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "payment_hash_idx": {
-          "name": "payment_hash_idx",
-          "columns": [
-            {
-              "expression": "payment_hash",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "user_payment_hash_idx": {
-          "name": "user_payment_hash_idx",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "payment_hash",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -192,23 +156,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "username_idx": {
-          "name": "username_idx",
-          "columns": [
-            {
-              "expression": "username",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {

@@ -4,6 +4,7 @@
     "jsr:@hono/hono@^4.5.5": "4.5.5",
     "jsr:@nostr/tools@^2.10.3": "2.10.3",
     "jsr:@std/assert@^1.0.6": "1.0.6",
+    "jsr:@std/dotenv@*": "0.225.2",
     "jsr:@std/expect@*": "1.0.4",
     "jsr:@std/internal@^1.0.4": "1.0.4",
     "npm:@getalby/sdk@*": "3.7.1",
@@ -38,6 +39,9 @@
       "dependencies": [
         "jsr:@std/internal"
       ]
+    },
+    "@std/dotenv@0.225.2": {
+      "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
     },
     "@std/expect@1.0.4": {
       "integrity": "97f68a445a9de0d9670200d2b7a19a7505a01b2cb390a983ba8d97d90ce30c4f",

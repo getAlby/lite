@@ -27,7 +27,7 @@ export class NWCPool {
       (notification) => {
         logger.debug("received notification", { userId, notification });
         if (notification.notification_type === "payment_received") {
-          this._db.updateInvoice(userId, notification.notification)
+          this._db.markInvoiceSettled(userId, notification.notification)
         }
       },
       ["payment_received"]
