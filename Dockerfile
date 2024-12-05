@@ -4,6 +4,7 @@ EXPOSE 8080
 WORKDIR /app
 
 COPY . .
+RUN touch /app/ca-certificate.crt
 
 USER deno
 
