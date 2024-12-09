@@ -4,7 +4,7 @@ import { secureHeaders } from "hono/secure-headers";
 //import { sentry } from "npm:@hono/sentry";
 import { PORT } from "./constants.ts";
 import { DB, runMigration } from "./db/db.ts";
-import { createLnurlApp } from "./lnurlp.ts";
+import { createLnurlApp, createLnurlWellKnownApp } from "./lnurlp.ts";
 import { LOG_LEVEL, logger, loggerMiddleware } from "./logger.ts";
 import { NWCPool } from "./nwc/nwcPool.ts";
 import { createUsersApp } from "./users.ts";
@@ -26,7 +26,8 @@ hono.use(secureHeaders());
   hono.use("*", sentry({ dsn: SENTRY_DSN }));
 }*/
 
-hono.route("/.well-known/lnurlp", createLnurlApp(db));
+hono.route("/.well-known/lnurlp", createLnurlWellKnownApp(db));
+hono.route("/lnurlp", createLnurlApp(db));
 hono.route("/users", createUsersApp(db, nwcPool));
 
 hono.get("/ping", (c) => {
