@@ -24,7 +24,7 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
 
     const lightningAddress = user.username + "@" + DOMAIN;
 
-    nwcPool.subscribeUser(createUserRequest.connectionSecret, user.username);
+    nwcPool.subscribeUser(createUserRequest.connectionSecret, user.id);
 
     return c.json({
       lightningAddress,

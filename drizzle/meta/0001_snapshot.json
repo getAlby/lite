@@ -1,5 +1,5 @@
 {
-  "id": "87dd9fe6-7a48-463d-bfce-15767f26fee9",
+  "id": "2088fd9b-1767-4f38-b32a-a68bbde5f684",
   "prevId": "e292703e-d08b-4f8b-a9eb-3937fe872be7",
   "version": "7",
   "dialect": "postgresql",
@@ -28,12 +28,6 @@
         },
         "description": {
           "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description_hash": {
-          "name": "description_hash",
           "type": "text",
           "primaryKey": false,
           "notNull": false

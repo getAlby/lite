@@ -29,7 +29,7 @@ export class DB {
   async createUser(
     connectionSecret: string,
     username?: string
-  ): Promise<{ username: string }> {
+  ) {
     const parsed = nwc.NWCClient.parseWalletConnectUrl(connectionSecret);
     if (!parsed.secret) {
       throw new Error("no secret found in connection secret");
@@ -40,12 +40,12 @@ export class DB {
 
     const encryptedConnectionSecret = await encrypt(connectionSecret);
 
-    await this._db.insert(users).values({
+    const [newUser] = await this._db.insert(users).values({
       encryptedConnectionSecret,
       username,
-    });
+    }).returning({ id: users.id, username: users.username });
 
-    return { username };
+    return newUser;
   }
 
   getAllUsers() {
@@ -74,7 +74,6 @@ export class DB {
       userId,
       amount: transaction.amount,
       description: transaction.description,
-      descriptionHash: transaction.description_hash,
       paymentRequest: transaction.invoice,
       paymentHash: transaction.payment_hash,
       metadata: transaction.metadata,

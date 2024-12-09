@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS "invoices" (
 	"user_id" integer NOT NULL,
 	"amount" bigint NOT NULL,
 	"description" text,
-	"description_hash" text,
 	"payment_request" text NOT NULL,
 	"payment_hash" text NOT NULL,
 	"preimage" text,

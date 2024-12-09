@@ -14,13 +14,6 @@ function getLnurlMetadata(username: string): string {
   ])
 }
 
-async function computeDescriptionHash(content: string): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content));
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 export function createLnurlWellKnownApp(db: DB) {
   const hono = new Hono();
 
@@ -62,7 +55,7 @@ export function createLnurlApp(db: DB) {
       const payerData = c.req.query("payerdata") ? JSON.parse(c.req.query("payerdata") || "") : null;
       const nostr = c.req.query("nostr") ? decodeURIComponent(c.req.query("nostr") || "") : null;
 
-      logger.debug("LNURLp callback", { username, amount, comment, payerData, nostr });
+      logger.debug("LNURLp callback", { username, amount, comment, payer_data: payerData, nostr });
 
       if (!amount) {
         throw new Error("No amount provided");
@@ -79,9 +72,6 @@ export function createLnurlApp(db: DB) {
 
       const description = zapRequest ? zapRequest.content : comment;
 
-      const content = zapRequest ? (nostr || "") : getLnurlMetadata(username);
-      const descriptionHash = await computeDescriptionHash(content);
-
       const user = await db.findUser(username);
 
       const nwcClient = new nwc.NWCClient({
@@ -96,8 +86,7 @@ export function createLnurlApp(db: DB) {
           // TODO: payer_data can be improved using nostr worker
           payer_data: payerData || undefined,
           nostr: zapRequest || undefined,
-        },
-        description_hash: descriptionHash,
+        }
       });
 
       await db.createInvoice(user.id, transaction);
@@ -117,7 +106,7 @@ export function createLnurlApp(db: DB) {
       const username = c.req.param("username");
       const paymentHash = c.req.param("payment_hash");
 
-      logger.debug("LNURLp verify", { username, paymentHash });
+      logger.debug("LNURLp verify", { username, payment_hash: paymentHash });
 
       const invoice = await db.findInvoice(paymentHash);
 

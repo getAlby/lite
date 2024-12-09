@@ -12,7 +12,6 @@ export const invoices = pgTable("invoices", {
   userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
   description: text("description"),
-  descriptionHash: text("description_hash"),
   paymentRequest: text("payment_request").unique().notNull(),
   paymentHash: text("payment_hash").unique().notNull(),
   preimage: text("preimage"),
