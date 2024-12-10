@@ -3,11 +3,11 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { nwc } from "npm:@getalby/sdk";
 import postgres from "postgres";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { DATABASE_URL } from "../constants.ts";
 import { decrypt, encrypt } from "./aesgcm.ts";
 import * as schema from "./schema.ts";
-import { users } from "./schema.ts";
+import { invoices, users } from "./schema.ts";
 
 export async function runMigration() {
   const migrationClient = postgres(DATABASE_URL, { max: 1 });
@@ -29,7 +29,7 @@ export class DB {
   async createUser(
     connectionSecret: string,
     username?: string
-  ): Promise<{ username: string }> {
+  ) {
     const parsed = nwc.NWCClient.parseWalletConnectUrl(connectionSecret);
     if (!parsed.secret) {
       throw new Error("no secret found in connection secret");
@@ -40,19 +40,19 @@ export class DB {
 
     const encryptedConnectionSecret = await encrypt(connectionSecret);
 
-    await this._db.insert(users).values({
+    const [newUser] = await this._db.insert(users).values({
       encryptedConnectionSecret,
       username,
-    });
+    }).returning({ id: users.id, username: users.username });
 
-    return { username };
+    return newUser;
   }
 
   getAllUsers() {
     return this._db.query.users.findMany();
   }
 
-  async findWalletConnectionSecret(username: string) {
+  async findUser(username: string) {
     const result = await this._db.query.users.findFirst({
       where: eq(users.username, username),
     });
@@ -60,6 +60,55 @@ export class DB {
       throw new Error("user not found");
     }
     const connectionSecret = await decrypt(result.encryptedConnectionSecret);
-    return connectionSecret;
+    return {
+      id: result.id,
+      connectionSecret
+    };
+  }
+
+  async createInvoice(
+    userId: number,
+    transaction: nwc.Nip47Transaction
+  ) {
+    await this._db.insert(invoices).values({
+      userId,
+      amount: transaction.amount,
+      description: transaction.description,
+      paymentRequest: transaction.invoice,
+      paymentHash: transaction.payment_hash,
+      metadata: transaction.metadata,
+    });
+
+    return;
+  }
+
+  async findInvoice(paymentHash: string) {
+    const result = await this._db.query.invoices.findFirst({
+      where: eq(invoices.paymentHash, paymentHash),
+    });
+    if (!result) {
+      throw new Error("invoice not found");
+    }
+    return result;
+  }
+
+  async markInvoiceSettled(
+    userId: number,
+    transaction: nwc.Nip47Transaction
+  ): Promise<void> {
+    await this._db
+      .update(invoices)
+      .set({
+        preimage: transaction.preimage,
+        settledAt: new Date(transaction.settled_at * 1000),
+      })
+      .where(
+        and(
+          eq(invoices.userId, userId),
+          eq(invoices.paymentHash, transaction.payment_hash)
+        )
+      )
+
+    return;
   }
 }

@@ -1,9 +1,18 @@
+import { Event } from "@nostr/tools";
+import { validateZapRequest } from "@nostr/tools/nip57";
 import { Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
 import { BASE_URL, DOMAIN } from "./constants.ts";
 import { DB } from "./db/db.ts";
 import "./nwc/nwcPool.ts";
+
+function getLnurlMetadata(username: string): string {
+  return JSON.stringify([
+    ["text/identifier", `${username}@${DOMAIN}`],
+    ["text/plain", `Sats for ${username}`],
+  ])
+}
 
 export function createLnurlWellKnownApp(db: DB) {
   const hono = new Hono();
@@ -15,7 +24,7 @@ export function createLnurlWellKnownApp(db: DB) {
       logger.debug("LNURLp request", { username });
 
       // check the user exists
-      await db.findWalletConnectionSecret(username);
+      await db.findUser(username);
 
       // TODO: zapper support
 
@@ -25,7 +34,7 @@ export function createLnurlWellKnownApp(db: DB) {
         callback: `${BASE_URL}/lnurlp/${username}/callback`,
         minSendable: 1000,
         maxSendable: 10000000000,
-        metadata: `[["text/identifier","${username}@${DOMAIN}"],["text/plain","Sats for ${username}"]]`,
+        metadata: getLnurlMetadata(username),
       });
     } catch (error) {
       return c.json({ status: "ERROR", reason: "" + error });
@@ -43,24 +52,44 @@ export function createLnurlApp(db: DB) {
       const username = c.req.param("username");
       const amount = c.req.query("amount");
       const comment = c.req.query("comment") || "";
-      logger.debug("LNURLp callback", { username, amount, comment });
+      const payerData = c.req.query("payerdata") ? JSON.parse(c.req.query("payerdata") || "") : null;
+      const nostr = c.req.query("nostr") ? decodeURIComponent(c.req.query("nostr") || "") : null;
 
-      // TODO: store data (e.g. for zaps)
+      logger.debug("LNURLp callback", { username, amount, comment, payer_data: payerData, nostr });
 
       if (!amount) {
         throw new Error("No amount provided");
       }
 
-      const connectionSecret = await db.findWalletConnectionSecret(username);
+      let zapRequest: Event | undefined
+      if (nostr) {
+        const zapValidationError = validateZapRequest(nostr)
+        if (zapValidationError) {
+          throw new Error(zapValidationError);
+        }
+        zapRequest = JSON.parse(nostr)
+      }
+
+      const description = zapRequest ? zapRequest.content : comment;
+
+      const user = await db.findUser(username);
 
       const nwcClient = new nwc.NWCClient({
-        nostrWalletConnectUrl: connectionSecret,
+        nostrWalletConnectUrl: user.connectionSecret,
       });
 
       const transaction = await nwcClient.makeInvoice({
         amount: Math.floor(+amount / 1000) * 1000,
-        description: comment,
+        description,
+        metadata: {
+          comment: comment || undefined,
+          // TODO: payer_data can be improved using nostr worker
+          payer_data: payerData || undefined,
+          nostr: zapRequest || undefined,
+        }
       });
+
+      await db.createInvoice(user.id, transaction);
 
       return c.json({
         verify: `${BASE_URL}/lnurlp/${username}/verify/${transaction.payment_hash}`,
@@ -76,22 +105,15 @@ export function createLnurlApp(db: DB) {
     try {
       const username = c.req.param("username");
       const paymentHash = c.req.param("payment_hash");
-      logger.debug("LNURLp verify", { username, paymentHash });
 
-      const connectionSecret = await db.findWalletConnectionSecret(username);
+      logger.debug("LNURLp verify", { username, payment_hash: paymentHash });
 
-      const nwcClient = new nwc.NWCClient({
-        nostrWalletConnectUrl: connectionSecret,
-      });
-
-      const transaction = await nwcClient.lookupInvoice({
-        payment_hash: paymentHash,
-      });
+      const invoice = await db.findInvoice(paymentHash);
 
       return c.json({
-        settled: !!transaction.settled_at,
-        preimage: transaction.preimage || null,
-        pr: transaction.invoice,
+        settled: !!invoice.settledAt,
+        preimage: invoice.preimage,
+        pr: invoice.paymentRequest,
       });
     } catch (error) {
       return c.json({ status: "ERROR", reason: "" + error });
