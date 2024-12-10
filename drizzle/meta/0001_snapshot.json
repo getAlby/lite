@@ -1,5 +1,5 @@
 {
-  "id": "2088fd9b-1767-4f38-b32a-a68bbde5f684",
+  "id": "52607bd8-7a1a-4a34-ad27-91b78733e85c",
   "prevId": "e292703e-d08b-4f8b-a9eb-3937fe872be7",
   "version": "7",
   "dialect": "postgresql",
@@ -76,6 +76,27 @@
           "columns": [
             {
               "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "user_payment_hash_idx": {
+          "name": "user_payment_hash_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payment_hash",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

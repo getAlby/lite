@@ -21,5 +21,6 @@ export const invoices = pgTable("invoices", {
 }, (table) => {
   return {
     userIdIdx: index("user_id_idx").on(table.userId),
+    userPaymentHashIdx: index("user_payment_hash_idx").on(table.userId, table.paymentHash),
   };
 });

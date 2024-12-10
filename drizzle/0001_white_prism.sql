@@ -19,4 +19,5 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "user_id_idx" ON "invoices" USING btree ("user_id");
+CREATE INDEX IF NOT EXISTS "user_id_idx" ON "invoices" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "user_payment_hash_idx" ON "invoices" USING btree ("user_id","payment_hash");
