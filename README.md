@@ -10,7 +10,7 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ```json
 {
-    "connectionSecret": "nostr+walletconnect://..."
+  "connectionSecret": "nostr+walletconnect://..."
 }
 ```
 
@@ -26,7 +26,6 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 - [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation/)
 - Copy `.env.example` to `.env`
-- Setup DB: `deno task db:migrate`
 - Run in dev mode: `deno task dev`
 
 ### Creating a new migration

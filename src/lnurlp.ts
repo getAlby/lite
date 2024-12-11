@@ -1,6 +1,6 @@
 import { Event } from "@nostr/tools";
 import { validateZapRequest } from "@nostr/tools/nip57";
-import { Context, Hono } from "hono";
+import { Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
 import { BASE_URL, DOMAIN } from "./constants.ts";
@@ -14,17 +14,10 @@ function getLnurlMetadata(username: string): string {
   ])
 }
 
-async function computeDescriptionHash(content: string): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content));
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 export function createLnurlWellKnownApp(db: DB) {
   const hono = new Hono();
 
-  hono.get("/:username", async (c: Context) => {
+  hono.get("/:username", async (c) => {
     try {
       const username = c.req.param("username");
 
@@ -54,7 +47,7 @@ export function createLnurlWellKnownApp(db: DB) {
 export function createLnurlApp(db: DB) {
   const hono = new Hono();
 
-  hono.get("/:username/callback", async (c: Context) => {
+  hono.get("/:username/callback", async (c) => {
     try {
       const username = c.req.param("username");
       const amount = c.req.query("amount");
@@ -62,7 +55,7 @@ export function createLnurlApp(db: DB) {
       const payerData = c.req.query("payerdata") ? JSON.parse(c.req.query("payerdata") || "") : null;
       const nostr = c.req.query("nostr") ? decodeURIComponent(c.req.query("nostr") || "") : null;
 
-      logger.debug("LNURLp callback", { username, amount, comment, payerData, nostr });
+      logger.debug("LNURLp callback", { username, amount, comment, payer_data: payerData, nostr });
 
       if (!amount) {
         throw new Error("No amount provided");
@@ -79,9 +72,6 @@ export function createLnurlApp(db: DB) {
 
       const description = zapRequest ? zapRequest.content : comment;
 
-      const content = zapRequest ? JSON.stringify(nostr) : getLnurlMetadata(username);
-      const descriptionHash = await computeDescriptionHash(content);
-
       const user = await db.findUser(username);
 
       const nwcClient = new nwc.NWCClient({
@@ -96,14 +86,13 @@ export function createLnurlApp(db: DB) {
           // TODO: payer_data can be improved using nostr worker
           payer_data: payerData || undefined,
           nostr: zapRequest || undefined,
-        },
-        description_hash: descriptionHash,
+        }
       });
 
-      const invoice = await db.createInvoice(user.id, transaction);
+      await db.createInvoice(user.id, transaction);
 
       return c.json({
-        verify: `${BASE_URL}/lnurlp/${username}/verify/${invoice.identifier}`,
+        verify: `${BASE_URL}/lnurlp/${username}/verify/${transaction.payment_hash}`,
         routes: [],
         pr: transaction.invoice,
       });
@@ -112,14 +101,14 @@ export function createLnurlApp(db: DB) {
     }
   });
 
-  hono.get("/:username/verify/:identifier", async (c: Context) => {
+  hono.get("/:username/verify/:payment_hash", async (c) => {
     try {
       const username = c.req.param("username");
-      const identifier = c.req.param("identifier");
+      const paymentHash = c.req.param("payment_hash");
 
-      logger.debug("LNURLp verify", { username, identifier });
+      logger.debug("LNURLp verify", { username, payment_hash: paymentHash });
 
-      const invoice = await db.findInvoice(identifier);
+      const invoice = await db.findInvoice(paymentHash);
 
       return c.json({
         settled: !!invoice.settledAt,

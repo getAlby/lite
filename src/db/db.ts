@@ -29,7 +29,7 @@ export class DB {
   async createUser(
     connectionSecret: string,
     username?: string
-  ): Promise<{ username: string }> {
+  ) {
     const parsed = nwc.NWCClient.parseWalletConnectUrl(connectionSecret);
     if (!parsed.secret) {
       throw new Error("no secret found in connection secret");
@@ -40,12 +40,12 @@ export class DB {
 
     const encryptedConnectionSecret = await encrypt(connectionSecret);
 
-    await this._db.insert(users).values({
+    const [newUser] = await this._db.insert(users).values({
       encryptedConnectionSecret,
       username,
-    });
+    }).returning({ id: users.id, username: users.username });
 
-    return { username };
+    return newUser;
   }
 
   getAllUsers() {
@@ -69,23 +69,22 @@ export class DB {
   async createInvoice(
     userId: number,
     transaction: nwc.Nip47Transaction
-  ): Promise<{ identifier: string }> {
+  ) {
     await this._db.insert(invoices).values({
       userId,
       amount: transaction.amount,
       description: transaction.description,
-      descriptionHash: transaction.description_hash,
       paymentRequest: transaction.invoice,
       paymentHash: transaction.payment_hash,
       metadata: transaction.metadata,
     });
 
-    return { identifier: transaction.payment_hash };
+    return;
   }
 
-  async findInvoice(identifier: string) {
+  async findInvoice(paymentHash: string) {
     const result = await this._db.query.invoices.findFirst({
-      where: eq(invoices.paymentHash, identifier),
+      where: eq(invoices.paymentHash, paymentHash),
     });
     if (!result) {
       throw new Error("invoice not found");
@@ -93,7 +92,7 @@ export class DB {
     return result;
   }
 
-  async updateInvoice(
+  async markInvoiceSettled(
     userId: number,
     transaction: nwc.Nip47Transaction
   ): Promise<void> {

@@ -1,4 +1,4 @@
-import { Context, Hono } from "hono";
+import { Hono } from "hono";
 import { serveStatic } from "hono/deno";
 import { secureHeaders } from "hono/secure-headers";
 //import { sentry } from "npm:@hono/sentry";
@@ -30,13 +30,13 @@ hono.route("/.well-known/lnurlp", createLnurlWellKnownApp(db));
 hono.route("/lnurlp", createLnurlApp(db));
 hono.route("/users", createUsersApp(db, nwcPool));
 
-hono.get("/ping", (c: Context) => {
+hono.get("/ping", (c) => {
   return c.body("OK");
 });
 
 hono.use("/favicon.ico", serveStatic({ path: "./favicon.ico" }));
 
-hono.get("/robots.txt", (c: Context) => {
+hono.get("/robots.txt", (c) => {
   return c.body("User-agent: *\nDisallow: /", 200);
 });
 

@@ -1,22 +1,17 @@
-import { index, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, index, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   encryptedConnectionSecret: text("connection_secret").notNull(),
   username: text("username").unique().notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (table) => {
-  return {
-    usernameIdx: index("username_idx").on(table.username),
-  };
 });
 
 export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  amount: integer("amount").notNull(),
+  amount: bigint("amount", { mode: "number" }).notNull(),
   description: text("description"),
-  descriptionHash: text("description_hash"),
   paymentRequest: text("payment_request").unique().notNull(),
   paymentHash: text("payment_hash").unique().notNull(),
   preimage: text("preimage"),
@@ -26,7 +21,6 @@ export const invoices = pgTable("invoices", {
 }, (table) => {
   return {
     userIdIdx: index("user_id_idx").on(table.userId),
-    paymentHashIdx: index("payment_hash_idx").on(table.paymentHash),
     userPaymentHashIdx: index("user_payment_hash_idx").on(table.userId, table.paymentHash),
   };
 });
