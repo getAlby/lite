@@ -1,3 +1,6 @@
+import { getPublicKey } from "@nostr/tools";
+import { hexToBytes } from "npm:@noble/hashes@1.3.1/utils";
+
 export const PORT = parseInt(Deno.env.get("PORT") || "8080");
 export const BASE_URL = Deno.env.get("BASE_URL");
 if (!BASE_URL) {
@@ -13,5 +16,4 @@ if (!databaseUrl) {
 export const DATABASE_URL = databaseUrl;
 
 export const NOSTR_NIP57_PRIVATE_KEY = Deno.env.get("NOSTR_NIP57_PRIVATE_KEY") || "";
-export const NOSTR_PUBLISHER_API_TOKEN = Deno.env.get("NOSTR_PUBLISHER_API_TOKEN") || "";
-export const NOSTR_PUBLISHER_API_URL = Deno.env.get("NOSTR_PUBLISHER_API_URL") || "https://nostr-publisher.getalby.workers.dev";
+export const NOSTR_NIP57_PUBLIC_KEY = NOSTR_NIP57_PRIVATE_KEY ? getPublicKey(hexToBytes(NOSTR_NIP57_PRIVATE_KEY)) : "";

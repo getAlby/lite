@@ -1,22 +1,20 @@
-import { Event, finalizeEvent } from "@nostr/tools";
+import { Event, finalizeEvent, SimplePool } from "@nostr/tools";
 import { makeZapReceipt } from "@nostr/tools/nip57";
 import { nwc } from "npm:@getalby/sdk";
 import { hexToBytes } from "npm:@noble/hashes@1.3.1/utils";
-import { NOSTR_NIP57_PRIVATE_KEY, NOSTR_PUBLISHER_API_TOKEN, NOSTR_PUBLISHER_API_URL } from "../constants.ts";
+import { NOSTR_NIP57_PRIVATE_KEY } from "../constants.ts";
 import { decrypt } from "../db/aesgcm.ts";
 import { DB } from "../db/db.ts";
 import { logger } from "../logger.ts";
 
 export class NWCPool {
   private readonly _db: DB;
-  private readonly publisherToken: string;
-  private readonly publisherUrl: string;
+  private readonly pool: SimplePool;
   private readonly zapperPrivateKey: string;
 
   constructor(db: DB) {
     this._db = db;
-    this.publisherToken = NOSTR_PUBLISHER_API_TOKEN;
-    this.publisherUrl = NOSTR_PUBLISHER_API_URL;
+    this.pool = new SimplePool()
     this.zapperPrivateKey = NOSTR_NIP57_PRIVATE_KEY;
   }
 
@@ -73,25 +71,25 @@ export class NWCPool {
 
     const signedEvent = finalizeEvent(zapReceipt, hexToBytes(this.zapperPrivateKey))
 
-    const response = await fetch(this.publisherUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'API-TOKEN': this.publisherToken,
-      },
-      body: JSON.stringify({
-        relays,
-        event: signedEvent,
-      }),
+    const results = await Promise.allSettled(this.pool.publish(relays, signedEvent))
+
+    const successfulRelays: string[] = [];
+    const failedRelays: string[] = [];
+
+    results.forEach((result, index) => {
+      const relay = relays[index];
+      if (result.status === 'fulfilled') {
+        successfulRelays.push(relay);
+      } else {
+        failedRelays.push(relay);
+      }
     });
-    
-    if (!response.ok) {
+
+    if (failedRelays.length === relays.length) {
       logger.error("failed to publish zap", {
         user_id: userId,
         event_id: signedEvent.id, 
         payment_hash: transaction.payment_hash, 
-        relays,
-        response_status: response.status,
       });
       return;
     }
@@ -100,7 +98,8 @@ export class NWCPool {
       user_id: userId,
       event_id: signedEvent.id, 
       payment_hash: transaction.payment_hash,
-      relays
+      successful_relays: successfulRelays,
+      failed_relays: failedRelays,
     });
   }
 }

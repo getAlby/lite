@@ -3,7 +3,7 @@ import { validateZapRequest } from "@nostr/tools/nip57";
 import { Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
-import { BASE_URL, DOMAIN } from "./constants.ts";
+import { BASE_URL, DOMAIN, NOSTR_NIP57_PUBLIC_KEY } from "./constants.ts";
 import { DB } from "./db/db.ts";
 import "./nwc/nwcPool.ts";
 
@@ -35,6 +35,21 @@ export function createLnurlWellKnownApp(db: DB) {
         minSendable: 1000,
         maxSendable: 10000000000,
         metadata: getLnurlMetadata(username),
+        payerData: {
+          name: {
+            mandatory: false
+          },
+          email: {
+            mandatory: false
+          },
+          pubkey: {
+            mandatory: false
+          }
+        },
+        ...(NOSTR_NIP57_PUBLIC_KEY ? {
+          nostrPubkey: NOSTR_NIP57_PUBLIC_KEY,
+          allowsNostr: true,
+        } : {})
       });
     } catch (error) {
       return c.json({ status: "ERROR", reason: "" + error });
