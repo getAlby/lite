@@ -28,7 +28,8 @@ export class DB {
 
   async createUser(
     connectionSecret: string,
-    username?: string
+    username?: string,
+    nostrPubkey?: string
   ) {
     const parsed = nwc.NWCClient.parseWalletConnectUrl(connectionSecret);
     if (!parsed.secret) {
@@ -43,7 +44,8 @@ export class DB {
     const [newUser] = await this._db.insert(users).values({
       encryptedConnectionSecret,
       username,
-    }).returning({ id: users.id, username: users.username });
+      nostrPubkey
+    }).returning({ id: users.id, username: users.username, nostrPubkey: users.nostrPubkey });
 
     return newUser;
   }
@@ -62,6 +64,7 @@ export class DB {
     const connectionSecret = await decrypt(result.encryptedConnectionSecret);
     return {
       id: result.id,
+      nostrPubkey: result.nostrPubkey,
       connectionSecret
     };
   }

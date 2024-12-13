@@ -14,10 +14,10 @@ function getLnurlMetadata(username: string): string {
   ])
 }
 
-export function createLnurlWellKnownApp(db: DB) {
+export function createWellKnownApp(db: DB) {
   const hono = new Hono();
 
-  hono.get("/:username", async (c) => {
+  hono.get("/lnurlp/:username", async (c) => {
     try {
       const username = c.req.param("username");
 
@@ -35,6 +35,28 @@ export function createLnurlWellKnownApp(db: DB) {
         minSendable: 1000,
         maxSendable: 10000000000,
         metadata: getLnurlMetadata(username),
+      });
+    } catch (error) {
+      return c.json({ status: "ERROR", reason: "" + error });
+    }
+  });
+
+  hono.get("/nostr.json", async (c) => {
+    try {
+      const username = c.req.query("name");
+
+      logger.debug("NIP05 request", { username });
+
+      if (!username) {
+        throw new Error("No username provided");
+      }
+
+      const user = await db.findUser(username);
+
+      return c.json({
+        names: {
+          [username]: user.nostrPubkey
+        }
       });
     } catch (error) {
       return c.json({ status: "ERROR", reason: "" + error });
