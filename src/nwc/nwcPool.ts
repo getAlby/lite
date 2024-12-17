@@ -63,8 +63,8 @@ export class NWCPool {
       bolt11: transaction.invoice,
       paidAt: new Date(transaction.settled_at * 1000)
     })
-    const relays = requestEvent.tags.filter(tag => tag[0] === 'relays')[0].slice(1);
-    if (!relays.length) {
+    const relays = requestEvent.tags.find(tag => tag[0] === 'relays')?.slice(1);
+    if (!relays || !relays.length) {
       logger.error("no relays specified in zap request", { user_id: userId, transaction });
       return;
     }
@@ -89,7 +89,8 @@ export class NWCPool {
       logger.error("failed to publish zap", {
         user_id: userId,
         event_id: signedEvent.id, 
-        payment_hash: transaction.payment_hash, 
+        payment_hash: transaction.payment_hash,
+        failed_relays: relays, 
       });
       return;
     }
