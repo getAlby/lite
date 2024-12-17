@@ -3,68 +3,8 @@ import { validateZapRequest } from "@nostr/tools/nip57";
 import { Hono } from "hono";
 import { nwc } from "npm:@getalby/sdk";
 import { logger } from "../src/logger.ts";
-import { BASE_URL, DOMAIN } from "./constants.ts";
+import { BASE_URL } from "./constants.ts";
 import { DB } from "./db/db.ts";
-import "./nwc/nwcPool.ts";
-
-function getLnurlMetadata(username: string): string {
-  return JSON.stringify([
-    ["text/identifier", `${username}@${DOMAIN}`],
-    ["text/plain", `Sats for ${username}`],
-  ])
-}
-
-export function createWellKnownApp(db: DB) {
-  const hono = new Hono();
-
-  hono.get("/lnurlp/:username", async (c) => {
-    try {
-      const username = c.req.param("username");
-
-      logger.debug("LNURLp request", { username });
-
-      // check the user exists
-      await db.findUser(username);
-
-      // TODO: zapper support
-
-      return c.json({
-        tag: "payRequest",
-        commentAllowed: 255,
-        callback: `${BASE_URL}/lnurlp/${username}/callback`,
-        minSendable: 1000,
-        maxSendable: 10000000000,
-        metadata: getLnurlMetadata(username),
-      });
-    } catch (error) {
-      return c.json({ status: "ERROR", reason: "" + error });
-    }
-  });
-
-  hono.get("/nostr.json", async (c) => {
-    try {
-      const username = c.req.query("name");
-
-      logger.debug("NIP05 request", { username });
-
-      if (!username) {
-        throw new Error("No username provided");
-      }
-
-      const user = await db.findUser(username);
-
-      return c.json({
-        names: {
-          [username]: user.nostrPubkey
-        }
-      });
-    } catch (error) {
-      return c.json({ status: "ERROR", reason: "" + error });
-    }
-  });
-
-  return hono;
-}
 
 export function createLnurlApp(db: DB) {
   const hono = new Hono();
