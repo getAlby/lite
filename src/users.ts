@@ -1,9 +1,11 @@
+import { nip19 } from "@nostr/tools";
 import { Hono } from "hono";
 import postgres from "postgres";
 import { DOMAIN } from "./constants.ts";
 import { DB } from "./db/db.ts";
 import { logger } from "./logger.ts";
 import { NWCPool } from "./nwc/nwcPool.ts";
+import { isValid32ByteHex } from "./utils.ts";
 
 export function createUsersApp(db: DB, nwcPool: NWCPool) {
   const hono = new Hono();
@@ -19,10 +21,22 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
         return c.text("no connection secret provided", 400);
       }
 
+      let nostrPubkey = createUserRequest.nostrPubkey
+
+      if (nostrPubkey) {
+        if (nostrPubkey.startsWith("npub")) {
+          nostrPubkey = nip19.decode(nostrPubkey).data as string
+        }
+  
+        if (!isValid32ByteHex(nostrPubkey)) {
+          return c.text("invalid nostr pubkey provided", 400);
+        }
+      }
+
       const user = await db.createUser(
         createUserRequest.connectionSecret,
         createUserRequest.username,
-        createUserRequest.nostrPubkey
+        nostrPubkey
       );
 
       const lightningAddress = user.username + "@" + DOMAIN;
