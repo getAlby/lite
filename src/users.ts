@@ -22,15 +22,16 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
       }
 
       let nostrPubkey = createUserRequest.nostrPubkey
+      if (!nostrPubkey) {
+        return c.text("no nostr pubkey provided", 400);
+      }
 
-      if (nostrPubkey) {
-        if (nostrPubkey.startsWith("npub")) {
-          nostrPubkey = nip19.decode(nostrPubkey).data as string
-        }
-  
-        if (!isValid32ByteHex(nostrPubkey)) {
-          return c.text("invalid nostr pubkey provided", 400);
-        }
+      if (nostrPubkey.startsWith("npub")) {
+        nostrPubkey = nip19.decode(nostrPubkey).data as string
+      }
+
+      if (!isValid32ByteHex(nostrPubkey)) {
+        return c.text("invalid nostr pubkey provided", 400);
       }
 
       const user = await db.createUser(
