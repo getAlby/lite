@@ -40,6 +40,14 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ## Deployment
 
+### Configuration Parameters
+
+- LOG_LEVEL: Sets the amount of detail in logs
+- BASE_URL: Base url of the lightning address server
+- DATABASE_URI: Postgres connection string
+- ENCRYPTION_KEY: Secret used to encrypt NWC connection secrets in the DB
+- NOSTR_NIP57_PRIVATE_KEY: private key of zapper service, see [NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md) for more info
+
 _Environment variables must be setup, including a postgres database connection. Please see .env.example._
 
 ### Run with Deno

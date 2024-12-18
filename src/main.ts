@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { serveStatic } from "hono/deno";
 import { secureHeaders } from "hono/secure-headers";
 //import { sentry } from "npm:@hono/sentry";
@@ -23,6 +24,7 @@ const hono = new Hono();
 
 hono.use(loggerMiddleware());
 hono.use(secureHeaders());
+hono.use(cors());
 /*if (SENTRY_DSN) {
   hono.use("*", sentry({ dsn: SENTRY_DSN }));
 }*/

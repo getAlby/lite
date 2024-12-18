@@ -1,7 +1,7 @@
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
+import postgres from "https://deno.land/x/postgresjs@v3.4.5/mod.js";
 import { nwc } from "npm:@getalby/sdk";
-import postgres from "postgres";
 
 import { and, eq } from "drizzle-orm";
 import { DATABASE_URL } from "../constants.ts";
