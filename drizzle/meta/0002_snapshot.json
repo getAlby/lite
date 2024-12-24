@@ -1,5 +1,5 @@
 {
-  "id": "0158a5e2-5076-4051-8e8d-2d382552344d",
+  "id": "b434562b-7a93-4c5f-992b-480f1ca2ed98",
   "prevId": "52607bd8-7a1a-4a34-ad27-91b78733e85c",
   "version": "7",
   "dialect": "postgresql",
@@ -186,13 +186,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
-        },
-        "users_nostr_pubkey_unique": {
-          "name": "users_nostr_pubkey_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "nostr_pubkey"
           ]
         }
       }

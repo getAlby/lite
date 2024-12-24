@@ -14,7 +14,7 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
     try {
       logger.debug("create user", {});
 
-      const createUserRequest: { connectionSecret: string; username?: string, nostrPubkey?: string } =
+      const createUserRequest: { connectionSecret: string; username?: string, nostrPubkey: string } =
         await c.req.json();
 
       if (!createUserRequest.connectionSecret) {
@@ -49,12 +49,8 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
       });
     } catch (error) {
       let reason = "" + error
-      if (error instanceof postgres.PostgresError) {
-        if (error.constraint_name === "users_username_unique") {
-          reason = "Username has already been taken"
-        } else if (error.constraint_name === "users_nostr_pubkey_unique") {
-          reason = "Nostr pubkey has already been taken"
-        }
+      if (error instanceof postgres.PostgresError && error.constraint_name === "users_username_unique") {
+        reason = "Username has already been taken"
       }
       return c.json({ status: "ERROR", reason });
     }
