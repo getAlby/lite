@@ -15,6 +15,13 @@
       "when": 1733813329314,
       "tag": "0001_white_prism",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1735020701926,
+      "tag": "0002_green_frightful_four",
+      "breakpoints": true
     }
   ]
 }
