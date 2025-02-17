@@ -10,7 +10,9 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ```json
 {
-  "connectionSecret": "nostr+walletconnect://..."
+  "connectionSecret": "nostr+walletconnect://...",
+  "nostrPubkey": "npubg3tal6y...",
+  "username": "" // optional
 }
 ```
 
