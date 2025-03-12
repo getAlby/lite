@@ -4,7 +4,7 @@ COPY . .
 
 RUN deno compile --allow-net --allow-read --allow-env --output main --target x86_64-unknown-linux-gnu src/main.ts
 
-FROM cgr.dev/chainguard/wolfi-base AS final
+FROM debian:bookworm-slim AS final
 WORKDIR /app
 
 COPY --from=builder /app/main /app/main
