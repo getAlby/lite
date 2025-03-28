@@ -1,7 +1,7 @@
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "https://deno.land/x/postgresjs@v3.4.5/mod.js";
 import { nwc } from "npm:@getalby/sdk";
+import postgres from "npm:postgres@3.4.5";
 
 import { and, eq } from "drizzle-orm";
 import { DATABASE_URL } from "../constants.ts";
@@ -35,18 +35,19 @@ export class DB {
     if (!parsed.secret) {
       throw new Error("no secret found in connection secret");
     }
-
-    // TODO: use haikunator
+    // TODO: use haikunator    
     username = username || Math.floor(Math.random() * 100000000000).toString();
-
+    
+    const safeNostrPubkey = nostrPubkey || "";
+    
     const encryptedConnectionSecret = await encrypt(connectionSecret);
-
+    
     const [newUser] = await this._db.insert(users).values({
       encryptedConnectionSecret,
       username,
-      nostrPubkey
+      nostrPubkey: safeNostrPubkey
     }).returning({ id: users.id, username: users.username, nostrPubkey: users.nostrPubkey });
-
+    
     return newUser;
   }
 
