@@ -115,4 +115,13 @@ export class DB {
 
     return;
   }
+
+  async deleteUser(username: string) {
+    const result = await this._db
+      .delete(users)
+      .where(eq(users.username, username))
+      .returning();
+    
+    return result.length > 0;
+  }
 }
