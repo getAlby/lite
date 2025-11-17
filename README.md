@@ -8,12 +8,15 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 `POST /users`
 
-```json
-{
-  "connectionSecret": "nostr+walletconnect://...",
-  "nostrPubkey": "npubg3tal6y...",
-  "username": "" // optional
-}
+```bash
+curl -X POST https://your-domain.com/users \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key-here" \
+  -d '{
+    "connectionSecret": "nostr+walletconnect://...",
+    "nostrPubkey": "npubg3tal6y...",
+    "username": "" // optional
+  }'
 ```
 
 `returns`
@@ -21,6 +24,21 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 ```
 {
     "lightningAddress": "91290133601@albylite.com"
+}
+```
+
+`DELETE /users`
+
+```bash
+curl -s -X DELETE -H "X-API-Key: your-api-key-here" https://your-domain.com/users/USER-TO-DELETE"
+```
+
+`returns`
+
+```json
+{
+  status: "SUCCESS",
+  message: "User USER-TO-DELETE deleted"
 }
 ```
 
