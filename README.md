@@ -4,21 +4,32 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ## API
 
-### Create a new user
+### Authentication
+
+Set the `API_KEY` environment variable in your `.env` file to a string of characters of your choice, to protect the `/users` endpoint. Include the API key in an `X-API-Key` header with each request.
+
+If no `API_KEY` is present, it will default to open-access. This means that if the server is exposed to the Internet, anyone can create users in your database, with any name, with funds going to an NWC wallet of their choice.
+
+### Create a Lightning Address
 
 `POST /users`
 
-```json
-{
-  "connectionSecret": "nostr+walletconnect://...",
-  "nostrPubkey": "npubg3tal6y...",
-  "username": "" // optional
-}
+```bash
+curl -X POST https://your-domain.com/users \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key-here" \
+  -d '{
+    "connectionSecret": "nostr+walletconnect://...",
+    "nostrPubkey": "npubg3tal6y...",
+    "username": "" // optional
+  }'
 ```
+
+Note: if a username is not provided, a random one will be generated.
 
 `returns`
 
-```
+```json
 {
     "lightningAddress": "91290133601@albylite.com"
 }
@@ -44,11 +55,12 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ### Configuration Parameters
 
-- LOG_LEVEL: Sets the amount of detail in logs
-- BASE_URL: Base url of the lightning address server
-- DATABASE_URL: Postgres connection string
-- ENCRYPTION_KEY: Secret used to encrypt NWC connection secrets in the DB
-- NOSTR_NIP57_PRIVATE_KEY: private key of zapper service, see [NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md) for more info
+- `LOG_LEVEL`: Sets the amount of detail in logs
+- `BASE_URL`: Base url of the lightning address server
+- `DATABASE_URL`: Postgres connection string
+- `ENCRYPTION_KEY`: Secret used to encrypt NWC connection secrets in the DB
+- `API_KEY`: Secret key for API authentication (required)
+- `NOSTR_NIP57_PRIVATE_KEY`: private key of zapper service, see [NIP-57](https://github.com/nostr-protocol/nips/blob/master/57.md) for more info
 
 _Environment variables must be setup, including a postgres database connection. Please see .env.example._
 
