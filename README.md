@@ -8,15 +8,12 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 `POST /users`
 
-```bash
-curl -X POST https://your-domain.com/users \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: your-api-key-here" \
-  -d '{
-    "connectionSecret": "nostr+walletconnect://...",
-    "nostrPubkey": "npubg3tal6y...",
-    "username": "" // optional
-  }'
+```json
+{
+  "connectionSecret": "nostr+walletconnect://...",
+  "nostrPubkey": "npubg3tal6y...",
+  "username": "" // optional
+}
 ```
 
 `returns`
