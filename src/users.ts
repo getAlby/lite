@@ -16,8 +16,8 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
     const expectedKey = Deno.env.get("API_KEY");
     
     if (!expectedKey) {
-      logger.warn("API_KEY environment variable is not set, authorization denied.");
-      return false;
+      logger.warn("API_KEY environment variable is not set! ‼️ Anyone with access to the endpoint can create users!");
+      return true;
     }
     
     if (!apiKey || apiKey !== expectedKey) {

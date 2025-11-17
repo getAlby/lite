@@ -6,7 +6,9 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 
 ### Authentication
 
-All API endpoints require authentication using an API key. Set the `API_KEY` environment variable and include it in the `X-API-Key` header with each request.
+Set the `API_KEY` environment variable in your `.env` file to a string of characters of your choice, to protect the `/users` endpoint. Include the API key in an `X-API-Key` header with each request.
+
+If no `API_KEY` is present, it will default to open-access. This means that if the server is exposed to the Internet, anyone can create users in your database, with any name, with funds going to an NWC wallet of their choice.
 
 ### Create a Lightning Address
 
