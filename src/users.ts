@@ -15,8 +15,8 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
     const expectedKey = Deno.env.get("API_KEY");
     
     if (!expectedKey) {
-      logger.warn("API_KEY environment variable is not set, authorization denied.");
-      return false;
+      logger.warn("API_KEY environment variable is not set! ‼️ Anyone with access to the endpoint can create users!");
+      return true;
     }
     
     if (!apiKey || apiKey !== expectedKey) {
@@ -78,7 +78,9 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
   });
 
   hono.delete("/:username", async (c) => {
-    if (!checkApiKey(c)) {
+    const serverAPIKey = Deno.env.get("API_KEY");
+
+    if (!serverAPIKey || !checkApiKey(c)) {
       return c.json({ status: "ERROR", reason: "Unauthorized" }, 401);
     }
 
