@@ -24,6 +24,21 @@ A minimal Lightning address server powered by [NWC](https://nwc.dev)
 }
 ```
 
+`DELETE /users`
+
+```bash
+curl -s -X DELETE -H "X-API-Key: your-api-key-here" https://your-domain.com/users/USER-TO-DELETE"
+```
+
+`returns`
+
+```json
+{
+  status: "SUCCESS",
+  message: "User USER-TO-DELETE deleted"
+}
+```
+
 ## Development
 
 - [Install Deno](https://docs.deno.com/runtime/manual/getting_started/installation/)
