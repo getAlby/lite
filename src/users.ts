@@ -10,7 +10,30 @@ import { isValid32ByteHex } from "./utils.ts";
 export function createUsersApp(db: DB, nwcPool: NWCPool) {
   const hono = new Hono();
 
+  // Authentication middleware function
+  const checkApiKey = (c: any) => {
+    const apiKey = c.req.header("X-API-Key");
+    const expectedKey = Deno.env.get("API_KEY");
+    
+    if (!expectedKey) {
+      logger.warn("API_KEY not set in environment variables");
+      return true; // Allow if no key is configured (backward compatible)
+    }
+    
+    if (!apiKey || apiKey !== expectedKey) {
+      logger.warn("Unauthorized API access attempt");
+      return false;
+    }
+    
+    return true;
+  };
+
   hono.post("/", async (c) => {
+    // Check authentication
+    if (!checkApiKey(c)) {
+      return c.json({ status: "ERROR", reason: "Unauthorized" }, 401);
+    }
+
     try {
       logger.debug("create user", {});
 
@@ -55,5 +78,6 @@ export function createUsersApp(db: DB, nwcPool: NWCPool) {
       return c.json({ status: "ERROR", reason });
     }
   });
+
   return hono;
 }
